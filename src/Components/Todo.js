@@ -1,31 +1,73 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { confirmAlert } from 'react-confirm-alert';
 import '../Components/Todo.css';
+
+// get the data from local storage
+
+const grtLocalItems = () => {
+    let list = localStorage.getItem('lists');
+    console.log(list);
+
+    if (list) {
+        return JSON.parse(localStorage.getItem('lists'));
+    }
+    else {
+        return [];
+    }
+}
 
 const Todo = () => {
     
     const [inputData, setInputData] = useState('');
-    const [items, setItems] = useState([]);
+    const [items, setItems] = useState(grtLocalItems());
+    const [toggleSubmit, setToggleSubmit] = useState(true);
+    const [isEditItem, setIsEditItem] = useState(null);
 
     const additem = () => {
         if(!inputData) {
             alert('first enter data..');
-        }else {
-            setItems([...items, inputData]);
+        }else if(inputData && !toggleSubmit) {
+            setItems(
+                items.map((elem) => {
+                    if(elem.id === isEditItem) {
+                        return{ ...elem, name: inputData }
+                    }
+                    return elem;
+                })
+            )
+                setToggleSubmit(true);
+                setInputData('');
+                setIsEditItem(null);
+        }
+        else {
+            const allInputData = {id: new Date().getTime().toString(), name: inputData }
+            setItems([...items, allInputData]);
             setInputData('');
         }
     }
 
-    const deleteItem = (id) => {
-        console.log(id);
-        const updateditems = items.filter((elem, ind) => {
-            return ind !== id;
+    const deleteItem = (index) => {
+        const updateditems = items.filter((elem) => {
+            return index !== elem.id;
         });
-
+        
         setItems(updateditems);
-    }
+    };
 
-    const editprofile = () => {
-        alert("the profile is edited");
+    // add data in local storage
+    useEffect(() => {
+        localStorage.setItem('lists', JSON.stringify(items))
+    }, [items])
+
+    const editIten = (id) => {
+        let newEditItem = items.find((elem) => {
+            return elem.id === id;
+        });
+        console.log("data for edit",newEditItem);
+
+        setToggleSubmit(false);
+        setInputData(newEditItem.name);
+        setIsEditItem(id);
     }
 
     return(
@@ -41,18 +83,23 @@ const Todo = () => {
                             value={inputData}
                             onChange={(e) => setInputData(e.target.value)}
                          />
-                         <button className="add-btn" title="Add Item" onClick={additem} >Add Item</button>
+                         {
+                            toggleSubmit ? <button className="add-btn" title="Add Item" onClick={additem} >Add Item</button> : 
+                            <button onClick={additem} >Edit</button>
+                         }
+                         
                     </div>
 
                     <div className="showItems">
                         {
-                            items.map((elem, ind) => {
+                            items.map((elem) => {
+                                
                                 return(
-                                    <div className="eachItem" key={ind}>
-                                        <h3>{elem}</h3>
-                                        <div className="delteedit">
-                                            <button onClick={editprofile} >Edit</button>
-                                            <button style={{marginLeft: "10%"}} onClick={() => deleteItem(ind)} >Delete</button>
+                                    <div className="eachItem" key={elem.id}>
+                                        <h3>{elem.name }</h3>
+                                     <div className="delteedit">
+                                            <button onClick={() => editIten(elem.id)} >Edit</button>
+                                            <button style={{marginLeft: "10%"}} onClick={() => deleteItem(elem.id)} >Delete</button>
                                         </div>
                                         
                                     </div>
