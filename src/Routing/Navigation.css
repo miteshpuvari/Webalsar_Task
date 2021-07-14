@@ -1,0 +1,14 @@
+.container {
+  justify-content: center;
+}
+.titleContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 30%;
+  margin-right: 30%;
+  margin-top: 2%;
+  font-size: 170%;
+  font-weight: bold;
+}
